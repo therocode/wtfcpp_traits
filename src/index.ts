@@ -1,3 +1,3 @@
-import test from './type_traits/type_traits.ts';
+import * as traits from './type_traits/type_traits.ts';
 
-test();
+traits.test();
