@@ -1,9 +1,32 @@
+//https://en.cppreference.com/w/cpp/language/type
+enum Type {
+    //fundamental types
+    Void,
+    NullptrT, //std::nullptr_t
+    ArithmeticType, //compound of [float, double, bool, ints, char, wchar_t] etc. NOT pointers
+    //compound types
+    ReferenceType, //compound of l-value refs: [ref to object, ref to func] r-value refs: [ref to object, ref to func]
+    PointerType, //compound of [pointer-to-object, pointer-to-member]
+    ArrayType, //int[5] etc. NOT std::array
+    FunctionType, // int int() const&  etc   NOT std::function or lambdas
+    EnumerationType, //enums
+    ClassType, //class/union/struct
+}
+
+export function is_fundamental(t : Type): boolean {
+    return t == Type.Void || t == Type.NullptrT || t == Type.ArithmeticType;
+}
+
+export function is_compound(t : Type): boolean {
+    return !is_fundamental(t);
+}
+
 //Abbreviations:
 // * nsdm - non-static data member
 // * constr - constructor
 interface TypeDescription {
-    is_array_type : boolean // int[5] etc.  NOT std::array
-    is_class_type : boolean // class/union/struct
+
+    type_class : Type
     has_private_nsdm : boolean
     has_protected_nsdm : boolean
     has_user_provided_constr : boolean //explicitly defaulted or deleted does not count
@@ -17,10 +40,10 @@ interface TypeDescription {
 
 export function is_aggregate(td: TypeDescription): boolean {
     //https://en.cppreference.com/w/cpp/language/aggregate_initialization
-    if(td.is_array_type) //array types are always aggregates
+    if(td.type_class == Type.ArrayType) //array types are always aggregates
         return true;
 
-    if(!td.is_class_type) //if it is neither array nor class type, it's not an aggregate
+    if(td.type_class != Type.ClassType) //if it is neither array nor class type, it's not an aggregate
         return false;
 
     //fail criteria for class types to be aggregates:
@@ -47,8 +70,7 @@ export function is_aggregate(td: TypeDescription): boolean {
 export function test() {
 
     let type_desc : TypeDescription = { 
-        is_array_type : false,
-        is_class_type : true,
+        type_class : Type.ClassType,
         has_private_nsdm : false,
         has_protected_nsdm : false,
         has_user_provided_constr : false,
