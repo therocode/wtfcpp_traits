@@ -39,9 +39,15 @@ interface TypeDescription {
     //type classification
     type_class : Type
     //constructors/destructors/etc
-    has_user_provided_constr : boolean //explicitly defaulted or deleted does not count
-    has_inherited_constr : boolean //constructors inherited like: using Base::Base;
-    has_explicit_constr : boolean //any constructor with 'explicit' before it, including if they have = default/delete
+    has_user_provided_default_constr : boolean //explicitly defaulted or deleted does not count
+    has_inherited_default_constr : boolean //constructors inherited like: using Base::Base;
+    has_explicit_default_constr : boolean //constructor with 'explicit' before it, including if has = default/delete
+    has_user_provided_copy_constr : boolean //explicitly defaulted or deleted does not count
+    has_inherited_copy_constr : boolean //constructors inherited like: using Base::Base;
+    has_explicit_copy_constr : boolean //constructor with 'explicit' before it, including if has = default/delete
+    has_user_provided_move_constr : boolean //explicitly defaulted or deleted does not count
+    has_inherited_move_constr : boolean //constructors inherited like: using Base::Base;
+    has_explicit_move_constr : boolean //constructor with 'explicit' before it, including if has = default/delete
     //inheritance
     has_trivial_base_class : boolean
     has_virtual_base_class : boolean //inherits with : virtual base
@@ -71,7 +77,7 @@ export function is_aggregate(td: TypeDescription): boolean {
         return false;
 
     //no user-provided, inherited, or explicit constructors (explicitly defaulted or deleted constructors are allowed)
-    if(td.has_user_provided_constr || td.has_inherited_constr || td.has_explicit_constr)
+    if(has_user_provided_constr(td) || has_inherited_constr(td) || has_explicit_constr(td))
         return false;
 
     //no virtual, private, or protected (since C++17) base classes
@@ -85,11 +91,49 @@ export function is_aggregate(td: TypeDescription): boolean {
     return true;
 }
 
-//--triviality--
+export function has_user_provided_constr(td: TypeDescription) : boolean {
+    return td.has_user_provided_default_constr ||
+        td.has_user_provided_copy_constr ||
+        td.has_user_provided_move_constr;
+}
+
+export function has_inherited_constr(td: TypeDescription) : boolean {
+    return td.has_inherited_default_constr ||
+        td.has_inherited_copy_constr ||
+        td.has_inherited_move_constr;
+}
+
+export function has_explicit_constr(td: TypeDescription) : boolean {
+    return td.has_explicit_default_constr ||
+        td.has_explicit_copy_constr ||
+        td.has_explicit_move_constr;
+}
+
+//https://en.cppreference.com/w/cpp/types/is_constructible
+export function is_default_constructible(td: TypeDescription): boolean {
+    if(!is_object(td.type_class)) //if it's not an object, bail
+        return false;
+
+    //all of these are always default constructible
+    if(_.includes([Type.NullptrT, Type.Arithmetic, Type.Pointer, Type.Array, Type.Enumeration], td.type_class))
+        return true;
+
+    //if it is Type.Class, we have to elaborate - the constructor must not be deleted
+    
+    //TODO:
+    // no reference nsdm without init
+    // no const nsdm without init
+    // no non-default constructible nsdm
+    // no non-default constructible bases
+    // no non bases with inaccessible/deleted destructors
+    // no explicitly deleted constructor
+    return false;   
+}
 
 //https://en.cppreference.com/w/cpp/language/default_constructor
-export function is_trivially_constructible(td : TypeDescription): boolean {
-    return !td.has_user_provided_constr &&  //not user provided  (implicit or defaulted is OK)
+export function is_trivially_default_constructible(td : TypeDescription): boolean {
+    return is_default_constructible(td) &&
+           !td.has_user_provided_default_constr &&  //not user provided  (implicit or defaulted is OK)
            !td.has_virtual_mf && //has no virtual member functions
            !td.has_virtual_base_class && //has no virtual base classes
            !td.has_nsdm_with_initializer &&//has no nsdm with default initialisers
@@ -101,9 +145,15 @@ export function test() {
 
     let type_desc : TypeDescription = { 
         type_class : Type.Class,
-        has_user_provided_constr : false,
-        has_inherited_constr : false,
-        has_explicit_constr : false,
+        has_user_provided_default_constr : false,
+        has_inherited_default_constr : false,
+        has_explicit_default_constr : false,
+        has_user_provided_copy_constr : false,
+        has_inherited_copy_constr : false,
+        has_explicit_copy_constr : false,
+        has_user_provided_move_constr : false,
+        has_inherited_move_constr : false,
+        has_explicit_move_constr : false,
         has_trivial_base_class : false,
         has_virtual_base_class : false,
         has_private_base_class : false,
