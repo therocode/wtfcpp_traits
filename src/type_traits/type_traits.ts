@@ -36,16 +36,23 @@ export function is_scalar(t: Type): boolean {
 // * constr - constructor
 // * mf - member function
 interface TypeDescription {
-
+    //type classification
     type_class : Type
-    has_private_nsdm : boolean
-    has_protected_nsdm : boolean
+    //constructors/destructors/etc
     has_user_provided_constr : boolean //explicitly defaulted or deleted does not count
     has_inherited_constr : boolean //constructors inherited like: using Base::Base;
     has_explicit_constr : boolean //any constructor with 'explicit' before it, including if they have = default/delete
+    //inheritance
+    has_trivial_base_class : boolean
     has_virtual_base_class : boolean //inherits with : virtual base
     has_private_base_class : boolean //inherits with : private base
     has_protected_base_class : boolean //inherits with : protected base
+    //data members
+    has_private_nsdm : boolean
+    has_protected_nsdm : boolean
+    has_nsdm_with_initializer : boolean
+    has_non_trivial_nsdm : boolean
+    //methods
     has_virtual_mf : boolean //defines or inherits a member that is 'virtual'
 }
 
@@ -78,18 +85,33 @@ export function is_aggregate(td: TypeDescription): boolean {
     return true;
 }
 
+//--triviality--
+
+//https://en.cppreference.com/w/cpp/language/default_constructor
+export function is_trivially_constructible(td : TypeDescription): boolean {
+    return !td.has_user_provided_constr &&  //not user provided  (implicit or defaulted is OK)
+           !td.has_virtual_mf && //has no virtual member functions
+           !td.has_virtual_base_class && //has no virtual base classes
+           !td.has_nsdm_with_initializer &&//has no nsdm with default initialisers
+            td.has_trivial_base_class && //every direct base of T is_trivially_constructible
+           !td.has_non_trivial_nsdm;//every nsdm has trivial default constructor - 
+}
+
 export function test() {
 
     let type_desc : TypeDescription = { 
         type_class : Type.Class,
-        has_private_nsdm : false,
-        has_protected_nsdm : false,
         has_user_provided_constr : false,
         has_inherited_constr : false,
         has_explicit_constr : false,
+        has_trivial_base_class : false,
         has_virtual_base_class : false,
         has_private_base_class : false,
         has_protected_base_class : false,
+        has_private_nsdm : false,
+        has_protected_nsdm : false,
+        has_nsdm_with_initializer : false,
+        has_non_trivial_nsdm : false,
         has_virtual_mf : false,
     };
 
