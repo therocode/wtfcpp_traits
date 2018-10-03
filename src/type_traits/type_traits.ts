@@ -48,6 +48,7 @@ interface TypeDescription {
     has_user_provided_move_constr : boolean //explicitly defaulted or deleted does not count
     has_inherited_move_constr : boolean //constructors inherited like: using Base::Base;
     has_explicit_move_constr : boolean //constructor with 'explicit' before it, including if has = default/delete
+    has_deleted_constr : boolean //any constructor which is deleted explicitly
     //inheritance
     has_trivial_base_class : boolean
     has_virtual_base_class : boolean //inherits with : virtual base
@@ -58,6 +59,7 @@ interface TypeDescription {
     has_protected_nsdm : boolean
     has_nsdm_with_initializer : boolean
     has_non_trivial_nsdm : boolean
+    has_initializer_needy_nsdm : boolean //a member that needs an initialiser and has none: 'const int' or 'int&'
     //methods
     has_virtual_mf : boolean //defines or inherits a member that is 'virtual'
 }
@@ -121,13 +123,11 @@ export function is_default_constructible(td: TypeDescription): boolean {
     //if it is Type.Class, we have to elaborate - the constructor must not be deleted
     
     //TODO:
-    // no reference nsdm without init
-    // no const nsdm without init
-    // no non-default constructible nsdm
-    // no non-default constructible bases
-    // no non bases with inaccessible/deleted destructors
-    // no explicitly deleted constructor
-    return false;   
+    return !td.has_initializer_needy_nsdm &&  // no reference nsdm without init, no const nsdm without init
+    // no non-default constructible nsdm - not tested
+    // no non-default constructible bases - not tested
+    // no non bases with inaccessible/deleted destructors - not tested
+        !td.has_deleted_constr; // no explicitly deleted constructor
 }
 
 //https://en.cppreference.com/w/cpp/language/default_constructor
@@ -154,6 +154,7 @@ export function test() {
         has_user_provided_move_constr : false,
         has_inherited_move_constr : false,
         has_explicit_move_constr : false,
+        has_deleted_constr : false,
         has_trivial_base_class : false,
         has_virtual_base_class : false,
         has_private_base_class : false,
@@ -162,7 +163,9 @@ export function test() {
         has_protected_nsdm : false,
         has_nsdm_with_initializer : false,
         has_non_trivial_nsdm : false,
+        has_initializer_needy_nsdm : false,
         has_virtual_mf : false,
+
     };
 
     console.log(`is_aggregate : ${ is_aggregate(type_desc) }`);
