@@ -123,7 +123,7 @@ export function is_default_constructible(td: TypeDescription): boolean {
     //if it is Type.Class, we have to elaborate - the constructor must not be deleted
     
     //TODO:
-    return !td.has_initializer_needy_nsdm &&  // no reference nsdm without init, no const nsdm without init
+    return !td.has_initializer_needy_nsdm && // no reference nsdm without init, no const nsdm without init
     // no non-default constructible nsdm - not tested
     // no non-default constructible bases - not tested
     // no non bases with inaccessible/deleted destructors - not tested
