@@ -1,10 +1,11 @@
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const VueHtmlWebpackPlugin = require('vue-html-webpack-plugin');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { VueLoaderPlugin } = require('vue-loader');
 
 module.exports = {
     entry: {
-        app: './src/index.ts',
+        app: './src/app.ts',
         type_traits: './src/type_traits/type_traits.ts',
     },
     devtool: 'inline-source-map',
@@ -17,7 +18,11 @@ module.exports = {
                 test: /\.tsx?$/,
                 use: 'ts-loader',
                 exclude: /node_modules/
-            }
+            },
+            {
+                test: /\.vue$/,
+                use: 'vue-loader'
+            },
         ]
     },
     performance: {
@@ -25,9 +30,11 @@ module.exports = {
     },
     plugins: [
         new CleanWebpackPlugin(['dist']),
-        new HtmlWebpackPlugin({
-            title: 'wtfcpp type traits'
-        })
+        new VueHtmlWebpackPlugin({
+            title: 'wtfcpp type traits',
+            vue: true
+        }),
+        new VueLoaderPlugin()
     ],
     output: {
         filename: '[name].bundle.js',
