@@ -15,15 +15,14 @@ module.exports = {
     module: {
         rules: [
             {
-                test: /\.tsx?$/,
-                loader: 'ts-loader',
-                exclude: /node_modules/,
-                options: { appendTsSuffixTo: [/\.vue$/] }
-            },
-            {
                 test: /\.vue$/,
                 use: 'vue-loader'
             },
+            {
+                test: /\.tsx?$/,
+                use: 'ts-loader',
+                exclude: /node_modules/,
+            }
         ]
     },
     performance: {

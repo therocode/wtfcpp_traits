@@ -1,15 +1,17 @@
 <template>
     <div>
         <h1>Hello World!</h1>
+        <type-viewer/>
     </div>
-    </type-viewer>
 </template>
 
-<script lang="ts">
-import Vue  from "vue"
+<script>
+import TypeViewer from './components/typeviewer.vue'
 
-export default Vue.extend({
-
-});
+export default {
+    components: {
+        'type-viewer': TypeViewer
+    }
+};
 
 </script>

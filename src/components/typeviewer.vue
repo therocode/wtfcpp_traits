@@ -1,7 +1,8 @@
 <template>
     <p>{{ greeting }} I am coco</p>
 </template>
-<script lang="ts">
+
+<script>
 export default {
     data() {
         return {
