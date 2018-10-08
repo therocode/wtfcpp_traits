@@ -172,7 +172,7 @@ export function test() {
 
 }
 
-export function get_test_description() {
+export function get_default_type_description() {
 
     let type_desc : TypeDescription = { 
         type_class : Type.Class,

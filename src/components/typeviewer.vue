@@ -1,7 +1,7 @@
 <template>
     <div>
-        <p>My description is: {{ type_description }}</p>
-        <p>My string is: {{ type_string }}</p>
+        <h2>Type</h2>
+        <pre>{{ type_string }}</pre>
     </div>
 </template>
 

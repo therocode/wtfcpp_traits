@@ -31,8 +31,8 @@ function inheritance_fragment(td: TypeDescription) {
 
 export function description_to_type_string(td: TypeDescription) {
     let result: string = `struct T |INHER|
-    {
-    };`;
+{
+};`;
 
     let replacings: Map<string, string> = new Map<string, string>([
         ['|INHER|', inheritance_fragment(td)],
