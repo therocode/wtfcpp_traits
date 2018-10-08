@@ -36,6 +36,12 @@ module.exports = {
         }),
         new VueLoaderPlugin()
     ],
+    resolve: {
+        modules: [
+            path.resolve('./src'),
+            path.resolve('./node_modules'),
+        ]
+    },
     output: {
         filename: '[name].bundle.js',
         path: path.resolve(__dirname, 'dist'),
