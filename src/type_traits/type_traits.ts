@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 
 //https://en.cppreference.com/w/cpp/language/type
-enum Type {
+export enum Type {
     //fundamental types
     Void,
     NullptrT, //std::nullptr_t
@@ -13,6 +13,34 @@ enum Type {
     Function, // int int() const&  etc   NOT std::function or lambdas
     Enumeration, //enums
     Class, //class/union/struct
+}
+
+export enum Attribute {
+    //constructors/destructors/etc
+    HasUserProvidedDefaultConstr,  //explicitly defaulted or deleted does not count
+    HasInheritedDefaultConstr,  //constructors inherited like: using Base::Base;
+    HasExplicitDefaultConstr,  //constructor with 'explicit' before it, including if has = default/delete
+    HasUserProvidedCopyConstr,  //explicitly defaulted or deleted does not count
+    HasInheritedCopyConstr,  //constructors inherited like: using Base::Base;
+    HasExplicitCopyConstr,  //constructor with 'explicit' before it, including if has = default/delete
+    HasUserProvidedMoveConstr,  //explicitly defaulted or deleted does not count
+    HasInheritedMoveConstr,  //constructors inherited like: using Base::Base;
+    HasExplicitMoveConstr,  //constructor with 'explicit' before it, including if has = default/delete
+    HasDeletedConstr,  //any constructor which is deleted explicitly
+    //inheritance
+    //has_trivial_base_class,  *not gonna check*
+    HasPublicBaseClass,  //inherits with : public base
+    HasVirtualBaseClass,  //inherits with : virtual base
+    HasPrivateBaseClass,  //inherits with : private base
+    HasProtectedBaseClass,  //inherits with : protected base
+    //data members
+    HasPrivateNsdm, 
+    HasProtectedNsdm, 
+    HasNsdmWithInitializer, 
+    HasNonTrivialNsdm, 
+    HasInitializerNeedyNsdm,  //a member that needs an initialiser and has none: 'const int' or 'int&'
+    //methods
+    HasVirtualMf,  //defines or inherits a member that is 'virtual'
 }
 
 export function is_fundamental(t : Type): boolean {
@@ -38,31 +66,32 @@ export function is_scalar(t: Type): boolean {
 export interface TypeDescription {
     //type classification
     type_class : Type
-    //constructors/destructors/etc
-    has_user_provided_default_constr : boolean //explicitly defaulted or deleted does not count
-    has_inherited_default_constr : boolean //constructors inherited like: using Base::Base;
-    has_explicit_default_constr : boolean //constructor with 'explicit' before it, including if has = default/delete
-    has_user_provided_copy_constr : boolean //explicitly defaulted or deleted does not count
-    has_inherited_copy_constr : boolean //constructors inherited like: using Base::Base;
-    has_explicit_copy_constr : boolean //constructor with 'explicit' before it, including if has = default/delete
-    has_user_provided_move_constr : boolean //explicitly defaulted or deleted does not count
-    has_inherited_move_constr : boolean //constructors inherited like: using Base::Base;
-    has_explicit_move_constr : boolean //constructor with 'explicit' before it, including if has = default/delete
-    has_deleted_constr : boolean //any constructor which is deleted explicitly
-    //inheritance
-    //has_trivial_base_class : boolean *not gonna check*
-    has_public_base_class : boolean //inherits with : public base
-    has_virtual_base_class : boolean //inherits with : virtual base
-    has_private_base_class : boolean //inherits with : private base
-    has_protected_base_class : boolean //inherits with : protected base
-    //data members
-    has_private_nsdm : boolean
-    has_protected_nsdm : boolean
-    has_nsdm_with_initializer : boolean
-    has_non_trivial_nsdm : boolean
-    has_initializer_needy_nsdm : boolean //a member that needs an initialiser and has none: 'const int' or 'int&'
-    //methods
-    has_virtual_mf : boolean //defines or inherits a member that is 'virtual'
+    attributes : boolean[]
+    ////constructors/destructors/etc
+    //has_user_provided_default_constr : boolean //explicitly defaulted or deleted does not count
+    //has_inherited_default_constr : boolean //constructors inherited like: using Base::Base;
+    //has_explicit_default_constr : boolean //constructor with 'explicit' before it, including if has = default/delete
+    //has_user_provided_copy_constr : boolean //explicitly defaulted or deleted does not count
+    //has_inherited_copy_constr : boolean //constructors inherited like: using Base::Base;
+    //has_explicit_copy_constr : boolean //constructor with 'explicit' before it, including if has = default/delete
+    //has_user_provided_move_constr : boolean //explicitly defaulted or deleted does not count
+    //has_inherited_move_constr : boolean //constructors inherited like: using Base::Base;
+    //has_explicit_move_constr : boolean //constructor with 'explicit' before it, including if has = default/delete
+    //has_deleted_constr : boolean //any constructor which is deleted explicitly
+    ////inheritance
+    ////has_trivial_base_class : boolean *not gonna check*
+    //has_public_base_class : boolean //inherits with : public base
+    //has_virtual_base_class : boolean //inherits with : virtual base
+    //has_private_base_class : boolean //inherits with : private base
+    //has_protected_base_class : boolean //inherits with : protected base
+    ////data members
+    //has_private_nsdm : boolean
+    //has_protected_nsdm : boolean
+    //has_nsdm_with_initializer : boolean
+    //has_non_trivial_nsdm : boolean
+    //has_initializer_needy_nsdm : boolean //a member that needs an initialiser and has none: 'const int' or 'int&'
+    ////methods
+    //has_virtual_mf : boolean //defines or inherits a member that is 'virtual'
 }
 
 export function is_aggregate(td: TypeDescription): boolean {
@@ -76,7 +105,7 @@ export function is_aggregate(td: TypeDescription): boolean {
     //fail criteria for class types to be aggregates:
 
     //no private or protected non-static data members
-    if(td.has_private_nsdm || td.has_protected_nsdm)
+    if(td.attributes[Attribute.HasPrivateNsdm] || td.attributes[Attribute.HasProtectedNsdm])
         return false;
 
     //no user-provided, inherited, or explicit constructors (explicitly defaulted or deleted constructors are allowed)
@@ -84,32 +113,32 @@ export function is_aggregate(td: TypeDescription): boolean {
         return false;
 
     //no virtual, private, or protected (since C++17) base classes
-    if(td.has_virtual_base_class || td.has_private_base_class || td.has_protected_base_class)
+    if(td.attributes[Attribute.HasVirtualBaseClass] || td.attributes[Attribute.HasPrivateBaseClass] || td.attributes[Attribute.HasProtectedBaseClass])
         return false;
 
     //no virtual member functions
-    if(td.has_virtual_mf)
+    if(td.attributes[Attribute.HasVirtualMf])
         return false;
 
     return true;
 }
 
 export function has_user_provided_constr(td: TypeDescription) : boolean {
-    return td.has_user_provided_default_constr ||
-        td.has_user_provided_copy_constr ||
-        td.has_user_provided_move_constr;
+    return td.attributes[Attribute.HasUserProvidedDefaultConstr] ||
+        td.attributes[Attribute.HasUserProvidedCopyConstr] ||
+        td.attributes[Attribute.HasUserProvidedMoveConstr];
 }
 
 export function has_inherited_constr(td: TypeDescription) : boolean {
-    return td.has_inherited_default_constr ||
-        td.has_inherited_copy_constr ||
-        td.has_inherited_move_constr;
+    return td.attributes[Attribute.HasInheritedDefaultConstr] ||
+        td.attributes[Attribute.HasInheritedCopyConstr] ||
+        td.attributes[Attribute.HasInheritedMoveConstr];
 }
 
 export function has_explicit_constr(td: TypeDescription) : boolean {
-    return td.has_explicit_default_constr ||
-        td.has_explicit_copy_constr ||
-        td.has_explicit_move_constr;
+    return td.attributes[Attribute.HasExplicitDefaultConstr] ||
+        td.attributes[Attribute.HasExplicitCopyConstr] ||
+        td.attributes[Attribute.HasExplicitMoveConstr];
 }
 
 //https://en.cppreference.com/w/cpp/types/is_constructible
@@ -124,48 +153,29 @@ export function is_default_constructible(td: TypeDescription): boolean {
     //if it is Type.Class, we have to elaborate - the constructor must not be deleted
     
     //TODO:
-    return !td.has_initializer_needy_nsdm && // no reference nsdm without init, no const nsdm without init
+    return !td.attributes[Attribute.HasInitializerNeedyNsdm] && // no reference nsdm without init, no const nsdm without init
     // no non-default constructible nsdm - not tested
     // no non-default constructible bases - not tested
     // no non bases with inaccessible/deleted destructors - not tested
-        !td.has_deleted_constr; // no explicitly deleted constructor
+        !td.attributes[Attribute.HasDeletedConstr]; // no explicitly deleted constructor
 }
 
 //https://en.cppreference.com/w/cpp/language/default_constructor
 export function is_trivially_default_constructible(td : TypeDescription): boolean {
     return is_default_constructible(td) &&
-           !td.has_user_provided_default_constr &&  //not user provided  (implicit or defaulted is OK)
-           !td.has_virtual_mf && //has no virtual member functions
-           !td.has_virtual_base_class && //has no virtual base classes
-           !td.has_nsdm_with_initializer &&//has no nsdm with default initialisers
+           !td.attributes[Attribute.HasUserProvidedDefaultConstr] &&  //not user provided  (implicit or defaulted is OK)
+           !td.attributes[Attribute.HasVirtualMf] && //has no virtual member functions
+           !td.attributes[Attribute.HasVirtualBaseClass] && //has no virtual base classes
+           !td.attributes[Attribute.HasNsdmWithInitializer] &&//has no nsdm with default initialisers
            // td.has_trivial_base_class && //every direct base of T is_trivially_constructible *not gonna check*
-           !td.has_non_trivial_nsdm;//every nsdm has trivial default constructor - 
+           !td.attributes[Attribute.HasNonTrivialNsdm];//every nsdm has trivial default constructor - 
 }
 
 export function test() {
 
     let type_desc : TypeDescription = { 
         type_class : Type.Class,
-        has_user_provided_default_constr : false,
-        has_inherited_default_constr : false,
-        has_explicit_default_constr : false,
-        has_user_provided_copy_constr : false,
-        has_inherited_copy_constr : false,
-        has_explicit_copy_constr : false,
-        has_user_provided_move_constr : false,
-        has_inherited_move_constr : false,
-        has_explicit_move_constr : false,
-        has_deleted_constr : false,
-        has_public_base_class : false,
-        has_virtual_base_class : false,
-        has_private_base_class : false,
-        has_protected_base_class : false,
-        has_private_nsdm : false,
-        has_protected_nsdm : false,
-        has_nsdm_with_initializer : false,
-        has_non_trivial_nsdm : false,
-        has_initializer_needy_nsdm : false,
-        has_virtual_mf : false,
+        attributes : [],
     };
 
     console.log(`is_aggregate : ${ is_aggregate(type_desc) }`);
@@ -176,26 +186,7 @@ export function get_default_type_description() {
 
     let type_desc : TypeDescription = { 
         type_class : Type.Class,
-        has_user_provided_default_constr : false,
-        has_inherited_default_constr : false,
-        has_explicit_default_constr : false,
-        has_user_provided_copy_constr : false,
-        has_inherited_copy_constr : false,
-        has_explicit_copy_constr : false,
-        has_user_provided_move_constr : false,
-        has_inherited_move_constr : false,
-        has_explicit_move_constr : false,
-        has_deleted_constr : false,
-        has_public_base_class : false,
-        has_virtual_base_class : false,
-        has_private_base_class : false,
-        has_protected_base_class : false,
-        has_private_nsdm : false,
-        has_protected_nsdm : false,
-        has_nsdm_with_initializer : false,
-        has_non_trivial_nsdm : false,
-        has_initializer_needy_nsdm : false,
-        has_virtual_mf : false,
+        attributes : [],
     }
 
     return type_desc;

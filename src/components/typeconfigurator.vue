@@ -2,22 +2,25 @@
     <div>
         <h2>Config</h2>
         <p>{{ type_description }}</p>
-        <label for="pub_base">Public Base Class</label>
-        <input type="checkbox" id="pub_base" v-model="type_description.has_public_base_class">
+        <configurator-checkbox v-bind:label="'Public Base Class'" v-bind:id="'pub_base'" v-bind:type_description="type_description" v-bind:type_attribute="Attribute.HasPublicBaseClass"/>
         <br>
-        <label for="priv_base">Private Base Class</label>
-        <input type="checkbox" id="priv_base" v-model="type_description.has_private_base_class">
+        <configurator-checkbox v-bind:label="'Private Base Class'" v-bind:id="'priv_base'" v-bind:type_description="type_description" v-bind:type_attribute="Attribute.HasPrivateBaseClass"/>
     </div>
 </template>
 
 <script>
-import { get_default_type_description } from 'type_traits/type_traits.ts';
+import ConfiguratorCheckbox from 'components/configuratorcheckbox.vue'
+import { get_default_type_description, Attribute } from 'type_traits/type_traits.ts';
 
 export default {
     data: function() {
         return {
-            type_description: get_default_type_description()
+            type_description: get_default_type_description(),
+            Attribute : Attribute
         }
+    },
+    components: {
+        'configurator-checkbox': ConfiguratorCheckbox,
     },
     watch: {
         type_description: {
