@@ -41,7 +41,10 @@ func rootCmdFunc(cmd *cobra.Command, args []string) error {
 	cfg := &Configuration{}
 
 	if err := viper.Unmarshal(cfg); err != nil {
+		log.Printf("Failed to load config file: %v", err)
 		return err
+	} else {
+		log.Printf("Config loaded")
 	}
 
 	//services
@@ -106,6 +109,7 @@ func rootCmdFunc(cmd *cobra.Command, args []string) error {
 
 	//log.Fatal(http.ListenAndServeTLS(":" + cfg.Port, "MyCertificate.crt", "MyKey.key", router))
 	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(cfg.Port), router))
+	log.Printf("Listening on port %d", cfg.Port)
 
 	return nil
 }
@@ -122,9 +126,11 @@ func initConfig() {
 	if cfgFile != "" {
 		failOnMissingConfig = true
 		viper.SetConfigFile(cfgFile)
+		log.Printf("Using config: %s", cfgFile)
 	} else {
 		viper.AddConfigPath(".")
 		viper.SetConfigName("config")
+		log.Printf("Will use default config")
 	}
 
 	err := viper.ReadInConfig()            //find and read the config file

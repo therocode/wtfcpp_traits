@@ -1,2 +1,4 @@
 site/dist/*
 site/node_modules/*
+config.toml
+server/main
