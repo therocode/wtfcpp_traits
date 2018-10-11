@@ -43,6 +43,20 @@ export enum Attribute {
     HasVirtualMf,  //defines or inherits a member that is 'virtual'
 }
 
+export enum CompoundAttribute {
+    IsAggregate = Attribute.HasVirtualMf + 1,   //last entry of Attribute
+    //constructors/destructors/etc
+    HasUserProvidedConstr,
+    HasInheritedConstr,
+    HasExplicitConstr
+}
+
+export type ReasonArray = any[];
+export interface TraitResult  {
+    is_true: boolean,
+    reasons: ReasonArray,
+}
+
 export function is_fundamental(t : Type): boolean {
     return _.includes([Type.Void, Type.NullptrT, Type.Arithmetic], t);
 }
@@ -94,33 +108,41 @@ export interface TypeDescription {
     //has_virtual_mf : boolean //defines or inherits a member that is 'virtual'
 }
 
-export function is_aggregate(td: TypeDescription): boolean {
+export function is_aggregate(td: TypeDescription): TraitResult {
+
+    let result: TraitResult = {is_true: true, reasons: []};
+
     //https://en.cppreference.com/w/cpp/language/aggregate_initialization
     if(td.type_class == Type.Array) //array types are always aggregates
-        return true;
+        result.is_true = true;
 
     if(td.type_class != Type.Class) //if it is neither array nor class type, it's not an aggregate
-        return false;
+        result.is_true = false; //TODO: what reason here
 
     //fail criteria for class types to be aggregates:
 
     //no private or protected non-static data members
-    if(td.attributes[Attribute.HasPrivateNsdm] || td.attributes[Attribute.HasProtectedNsdm])
-        return false;
+    result.reasons[Attribute.HasPrivateNsdm] = td.attributes[Attribute.HasPrivateNsdm];
+    result.reasons[Attribute.HasProtectedNsdm] = td.attributes[Attribute.HasProtectedNsdm];
 
     //no user-provided, inherited, or explicit constructors (explicitly defaulted or deleted constructors are allowed)
-    if(has_user_provided_constr(td) || has_inherited_constr(td) || has_explicit_constr(td))
-        return false;
+    result.reasons[CompoundAttribute.HasUserProvidedConstr] = has_user_provided_constr(td);
+    result.reasons[CompoundAttribute.HasInheritedConstr] = has_inherited_constr(td);
+    result.reasons[CompoundAttribute.HasExplicitConstr] = has_explicit_constr(td);
 
     //no virtual, private, or protected (since C++17) base classes
-    if(td.attributes[Attribute.HasVirtualBaseClass] || td.attributes[Attribute.HasPrivateBaseClass] || td.attributes[Attribute.HasProtectedBaseClass])
-        return false;
+    result.reasons[Attribute.HasVirtualBaseClass] = td.attributes[Attribute.HasVirtualBaseClass];
+    result.reasons[Attribute.HasPrivateBaseClass] = td.attributes[Attribute.HasPrivateBaseClass];
+    result.reasons[Attribute.HasProtectedBaseClass] = td.attributes[Attribute.HasProtectedBaseClass];
 
     //no virtual member functions
-    if(td.attributes[Attribute.HasVirtualMf])
-        return false;
+    result.reasons[Attribute.HasVirtualMf] = td.attributes[Attribute.HasVirtualMf];
 
-    return true;
+    for(let entry of result.reasons)
+        if(entry)
+            result.is_true = false;
+
+    return result;
 }
 
 export function has_user_provided_constr(td: TypeDescription) : boolean {
