@@ -14,8 +14,9 @@ import (
 )
 
 type Configuration struct {
-	SiteDir string
-	Port    int
+	SiteDir     string
+	Port        int
+	AllowOrigin []string
 }
 
 var rootCommand = &cobra.Command{
@@ -29,15 +30,6 @@ func rootCmdFunc(cmd *cobra.Command, args []string) error {
 	// you can enable trace by setting this to true
 	vestigo.AllowTrace = true
 
-	// Setting up router global  CORS policy
-	router.SetGlobalCors(&vestigo.CorsAccessControl{
-		AllowOrigin:      []string{"*", "test.com"},
-		AllowCredentials: true,
-		ExposeHeaders:    []string{"X-Header", "X-Y-Header"},
-		MaxAge:           3600 * time.Second,
-		AllowHeaders:     []string{"X-Header", "X-Y-Header"},
-	})
-
 	cfg := &Configuration{}
 
 	if err := viper.Unmarshal(cfg); err != nil {
@@ -46,6 +38,15 @@ func rootCmdFunc(cmd *cobra.Command, args []string) error {
 	} else {
 		log.Printf("Config loaded")
 	}
+
+	// Setting up router global  CORS policy
+	router.SetGlobalCors(&vestigo.CorsAccessControl{
+		AllowOrigin:      cfg.AllowOrigin,
+		AllowCredentials: false,
+		ExposeHeaders:    []string{},
+		MaxAge:           3600 * time.Second,
+		AllowHeaders:     []string{},
+	})
 
 	//if you also serve static files from this application:
 	// router.Get takes a handler func, so append .ServeHTTP to the end of the handler
@@ -62,6 +63,7 @@ func rootCmdFunc(cmd *cobra.Command, args []string) error {
 func initConfig() {
 	viper.SetDefault("SiteDir", "./site/dist")
 	viper.SetDefault("Port", 8001)
+	viper.SetDefault("AllowOrigin", []string{})
 
 	var cfgFile string
 
