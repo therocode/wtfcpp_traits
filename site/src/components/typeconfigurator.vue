@@ -1,10 +1,9 @@
 <template>
     <div>
         <h2>Config</h2>
-        <p>{{ type_description }}</p>
         <configurator-checkbox v-bind:label="'Public Base Class'" v-bind:id="'pub_base'" v-bind:type_description="type_description" v-bind:type_attribute="Attribute.HasPublicBaseClass"/>
-        <br>
         <configurator-checkbox v-bind:label="'Private Base Class'" v-bind:id="'priv_base'" v-bind:type_description="type_description" v-bind:type_attribute="Attribute.HasPrivateBaseClass"/>
+        <configurator-checkbox v-bind:label="'Virtual Base Class'" v-bind:id="'virt_base'" v-bind:type_description="type_description" v-bind:type_attribute="Attribute.HasVirtualBaseClass"/>
     </div>
 </template>
 
