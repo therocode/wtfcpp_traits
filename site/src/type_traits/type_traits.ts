@@ -51,6 +51,10 @@ export enum CompoundAttribute {
     HasExplicitConstr
 }
 
+export function is_compount_attribute(i : number){
+    return i > Attribute.HasVirtualMf;
+}
+
 export type ReasonArray = any[];
 export interface TraitResult  {
     is_true: boolean,
@@ -212,4 +216,18 @@ export function get_default_type_description() {
     }
 
     return type_desc;
+}
+
+export function count_inheritance(td: TypeDescription) {
+    let count: number = 0;
+    if(td.attributes[Attribute.HasPublicBaseClass])
+        ++count;
+    if(td.attributes[Attribute.HasPrivateBaseClass])
+        ++count;
+    if(td.attributes[Attribute.HasProtectedBaseClass])
+        ++count;
+    if(td.attributes[Attribute.HasVirtualBaseClass])
+        ++count;
+
+    return count;
 }

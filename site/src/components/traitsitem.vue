@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { Attribute } from 'type_traits/type_traits.ts'
+import { Attribute, CompoundAttribute, is_compount_attribute } from 'type_traits/type_traits.ts'
 export default {
     props: [
         'item_data',
@@ -15,9 +15,20 @@ export default {
             let result = "";
 
             this.item_data.reasons.forEach(function(val, i) {
-                if(val)
+                if(Array.isArray(val))
                 {
-                    result += Attribute[i] + " ";
+                    console.log("was array");
+                }
+                else if(val)
+                {
+                    if(is_compount_attribute(i))
+                    {
+                        result += CompoundAttribute[i] + " ";
+                    }
+                    else
+                    {
+                        result += Attribute[i] + " ";
+                    }
                 }
             });
 
