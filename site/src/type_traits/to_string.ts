@@ -5,6 +5,7 @@ export function description_to_type_string(td: TypeDescription) {
     let result: string = `struct T |INHER|
 {
     |DEF_CONST|
+    |MEM_FUNS|
 };`;
 
     let inheritance_count: number = count_inheritance(td)
@@ -12,6 +13,7 @@ export function description_to_type_string(td: TypeDescription) {
     let replacings: Map<string, string> = new Map<string, string>([
         ['|INHER|', inheritance_fragment(td)],
         ['|DEF_CONST|', default_constructor_fragment(td, inheritance_count)],
+        ['|MEM_FUNS|', virtual_member_functions_fragment(td)],
     ]);
 
     for(const [token, replacement] of replacings.entries())
@@ -75,6 +77,15 @@ function default_constructor_fragment(td: TypeDescription, inherit_count : numbe
 
     if(count > 1)
         throw new Error("Default constructor should only be provided in one way");
+
+    return fragment;
+}
+
+function virtual_member_functions_fragment(td: TypeDescription) {
+    let fragment : string = "";
+
+    if(td.attributes[Attribute.HasVirtualMf])
+        fragment += "virtual f();";
 
     return fragment;
 }
