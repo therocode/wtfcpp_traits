@@ -46,5 +46,6 @@ export default {
   padding: 0.7em 1em;
   margin-right: 0.5em;
   line-height: 3em;
+  white-space: nowrap;
 }
 </style>
