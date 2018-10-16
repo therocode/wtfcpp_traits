@@ -12,6 +12,7 @@
         <configurator-checkbox v-bind:label="'Virtual member function'" v-bind:id="'virt_mem_fun'" v-bind:type_description="type_description" v-bind:type_attribute="Attribute.HasVirtualMf"/>
 
         <configurator-checkbox v-bind:label="'Data member with initializer'" v-bind:id="'data_mem_init'" v-bind:type_description="type_description" v-bind:type_attribute="Attribute.HasNsdmWithInitializer"/>
+        <configurator-checkbox v-bind:label="'Referece data member'" v-bind:id="'ref_data_mem'" v-bind:type_description="type_description" v-bind:type_attribute="Attribute.HasReferenceNsdm"/>
     </div>
 </template>
 

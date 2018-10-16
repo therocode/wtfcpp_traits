@@ -37,8 +37,8 @@ export enum Attribute {
     HasPrivateNsdm, 
     HasProtectedNsdm, 
     HasNsdmWithInitializer, 
+    HasReferenceNsdm, 
     HasNonTrivialNsdm, 
-    HasInitializerNeedyNsdm,  //a member that needs an initialiser and has none: 'const int' or 'int&'
     //methods
     HasVirtualMf,  //defines or inherits a member that is 'virtual'
 }
@@ -49,7 +49,8 @@ export enum CompoundAttribute {
     //constructors/destructors/etc
     HasUserProvidedConstr,
     HasInheritedConstr,
-    HasExplicitConstr
+    HasExplicitConstr,
+    HasInitializerNeedyNsdm,  //a member that needs an initialiser and has none: 'const int' or 'int&'
 }
 
 export function is_compount_attribute(i : number){
@@ -168,6 +169,10 @@ export function has_explicit_constr(td: TypeDescription) : boolean {
         td.attributes[Attribute.HasExplicitMoveConstr];
 }
 
+export function has_initializer_needy_nsdm(td: TypeDescription) : boolean {
+    return td.attributes[Attribute.HasReferenceNsdm];
+}
+
 //https://en.cppreference.com/w/cpp/types/is_constructible
 export function is_default_constructible(td: TypeDescription): boolean {
     if(!is_object(td.type_class)) //if it's not an object, bail
@@ -180,7 +185,7 @@ export function is_default_constructible(td: TypeDescription): boolean {
     //if it is Type.Class, we have to elaborate - the constructor must not be deleted
     
     //TODO:
-    return !td.attributes[Attribute.HasInitializerNeedyNsdm] && // no reference nsdm without init, no const nsdm without init
+    return !td.attributes[CompoundAttribute.HasInitializerNeedyNsdm] && // no reference nsdm without init, no const nsdm without init
     // no non-default constructible nsdm - not tested
     // no non-default constructible bases - not tested
     // no non bases with inaccessible/deleted destructors - not tested
@@ -227,6 +232,28 @@ export function is_standard_layout(td: TypeDescription): TraitResult {
 
     let result: TraitResult = {is_true: true, reasons: []};
 
+    //All non-static data members have the same access control
+    //TBI
+
+    //Has no virtual functions or virtual base classes
+    result.reasons[Attribute.HasVirtualBaseClass] = td.attributes[Attribute.HasVirtualBaseClass];
+    result.reasons[Attribute.HasVirtualMf] = td.attributes[Attribute.HasVirtualMf];
+
+    //Has no non-static data members of reference type
+    result.reasons[Attribute.HasReferenceNsdm] = td.attributes[Attribute.HasReferenceNsdm];
+
+    //All non-static data members and base classes are themselves standard layout types
+    //TBI
+
+    //Has no two (possibly indirect) base class subobjects of the same type
+    //not tested
+
+    //Has all non-static data members and bit-fields declared in the same class (either all in the derived or all in some base)
+    //TBI - maybe don't provied options for this regarding the base class, but consider how to make it clear that base classes don't have members
+
+    for(let entry of result.reasons)
+        if(entry)
+            result.is_true = false;
 
     return result;
 }
