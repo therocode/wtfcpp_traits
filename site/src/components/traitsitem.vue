@@ -45,7 +45,6 @@ export default {
   background-color: #eee;
   padding: 0.7em 1em;
   margin-right: 0.5em;
-  line-height: 3em;
-  white-space: nowrap;
+  display:inline-block;margin-bottom: 0.5em;
 }
 </style>
