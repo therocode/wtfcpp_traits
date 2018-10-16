@@ -45,6 +45,7 @@ export enum Attribute {
 
 export enum CompoundAttribute {
     IsAggregate = Attribute.HasVirtualMf + 1,   //last entry of Attribute
+    IsStandardLayout,
     //constructors/destructors/etc
     HasUserProvidedConstr,
     HasInheritedConstr,
@@ -197,17 +198,6 @@ export function is_trivially_default_constructible(td : TypeDescription): boolea
            !td.attributes[Attribute.HasNonTrivialNsdm];//every nsdm has trivial default constructor - 
 }
 
-export function test() {
-
-    let type_desc : TypeDescription = { 
-        type_class : Type.Class,
-        attributes : [],
-    };
-
-    console.log(`is_aggregate : ${ is_aggregate(type_desc) }`);
-
-}
-
 export function get_default_type_description() {
 
     let type_desc : TypeDescription = { 
@@ -230,4 +220,13 @@ export function count_inheritance(td: TypeDescription) {
         ++count;
 
     return count;
+}
+
+//https://en.cppreference.com/w/cpp/named_req/StandardLayoutType
+export function is_standard_layout(td: TypeDescription): TraitResult {
+
+    let result: TraitResult = {is_true: true, reasons: []};
+
+
+    return result;
 }

@@ -6,6 +6,7 @@ export function description_to_type_string(td: TypeDescription) {
 {
     |DEF_CONST|
     |MEM_FUNS|
+    |DATA_MEM|
 };`;
 
     let inheritance_count: number = count_inheritance(td)
@@ -14,6 +15,7 @@ export function description_to_type_string(td: TypeDescription) {
         ['|INHER|', inheritance_fragment(td)],
         ['|DEF_CONST|', default_constructor_fragment(td, inheritance_count)],
         ['|MEM_FUNS|', virtual_member_functions_fragment(td)],
+        ['|DATA_MEM|', data_members_fragment(td)],
     ]);
 
     for(const [token, replacement] of replacings.entries())
@@ -71,7 +73,7 @@ function default_constructor_fragment(td: TypeDescription, inherit_count : numbe
     }
     if(td.attributes[Attribute.HasExplicitDefaultConstr])
     {
-        fragment += "explicit T() {}";
+        fragment += "explicit T() = default;";
         ++count;
     }
 
@@ -86,6 +88,15 @@ function virtual_member_functions_fragment(td: TypeDescription) {
 
     if(td.attributes[Attribute.HasVirtualMf])
         fragment += "virtual f();";
+
+    return fragment;
+}
+
+function data_members_fragment(td: TypeDescription) {
+    let fragment : string = "";
+
+    if(td.attributes[Attribute.HasNsdmWithInitializer])
+        fragment += "int i = 0;";
 
     return fragment;
 }

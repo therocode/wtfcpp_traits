@@ -1,6 +1,6 @@
 <template>
     <div>
-        <p>{{ item_data.name }} - {{ item_data.is_true }} | {{ reason_string }} </p>
+        <span class="trait-box">{{ item_data.name }} - {{ item_data.is_true }}</span><span class="trait-box">{{ reason_string }} </span>
     </div>
 </template>
 
@@ -37,3 +37,14 @@ export default {
     }
 }
 </script>
+
+<style scoped>
+.trait-box {
+  border-radius: 3px;
+
+  background-color: #eee;
+  padding: 0.7em 1em;
+  margin-right: 0.5em;
+  line-height: 3em;
+}
+</style>

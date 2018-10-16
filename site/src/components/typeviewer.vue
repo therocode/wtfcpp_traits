@@ -18,3 +18,12 @@ export default {
     },
 }
 </script>
+
+<style scoped>
+pre{
+  border-radius: 3px;
+
+  background-color: #eee;
+  padding: 0.7em 1em;
+}
+</style>

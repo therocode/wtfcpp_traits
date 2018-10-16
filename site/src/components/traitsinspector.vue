@@ -7,7 +7,7 @@
 
 <script>
 import TraitsItem from 'components/traitsitem.vue'
-import { is_aggregate } from 'type_traits/type_traits.ts'
+import { is_aggregate, is_standard_layout } from 'type_traits/type_traits.ts'
 
 export default {
     props: [
@@ -20,6 +20,7 @@ export default {
         'traits': function () {
             return [
                 this.create_traits_item("std::is_aggregate", is_aggregate),
+                this.create_traits_item("std::is_standard_layout", is_standard_layout),
             ];
         },
     },

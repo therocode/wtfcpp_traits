@@ -1,7 +1,7 @@
 <template>
     <div>
-        <label :for="id">{{ label }}</label>
         <input type="checkbox" :id="id" v-model="type_description.attributes[type_attribute]">
+        <label :for="id">{{ label }}</label>
     </div>
 </template>
 

@@ -1,9 +1,11 @@
 <template>
-    <div>
-        <h1>Wtf C++ Traits</h1>
-        <type-configurator v-on:typeDescChanged="onTypeDescChanged"/>
-        <type-viewer v-bind:type_description="type_description"/>
-        <traits-inspector v-bind:type_description="type_description"/>
+    <div class="app">
+        <h2>WTF C++ Traits</h2>
+        <div class="container">
+            <type-configurator v-on:typeDescChanged="onTypeDescChanged"/>
+            <type-viewer v-bind:type_description="type_description"/>
+            <traits-inspector v-bind:type_description="type_description"/>
+        </div>
     </div>
 </template>
 
@@ -30,3 +32,25 @@ export default {
 };
 
 </script>
+
+<style>
+@import '~bootstrap/dist/css/bootstrap-reboot.css';
+</style>
+
+<style scoped>
+.app {
+  max-width: 550px;
+  padding: 1em;
+  color: #444;
+}
+
+.container {
+  padding: 1em 1.8em;
+  padding-bottom: 1.5em;
+  margin: 1em 0em;
+  border-radius: 4px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+  box-shadow: 0px 4px 6px 0px rgba(0, 0, 0, 0.4);
+}
+</style>
